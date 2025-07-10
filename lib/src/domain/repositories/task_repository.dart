@@ -130,6 +130,14 @@ abstract class TaskRepository {
   /// 获取任务统计信息
   Future<TaskStatistics> getTaskStatistics();
   
+  /// 获取指定日期范围内的任务统计信息
+  /// [startDate] 开始日期
+  /// [endDate] 结束日期
+  Future<TaskStatistics> getTaskStatisticsByDateRange(
+    DateTime startDate,
+    DateTime endDate,
+  );
+  
   /// 导出任务数据
   /// [format] 导出格式（如 'json', 'csv'）
   /// [includeArchived] 是否包含已归档的任务

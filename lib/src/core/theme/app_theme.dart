@@ -44,7 +44,7 @@ class AppTheme {
       ),
       
       // 卡片主题
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -87,12 +87,30 @@ class AppTheme {
       ),
       
       // 底部导航栏主题
-      bottomNavigationBarTheme: const BottomNavigationBarTheme(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Colors.white,
         selectedItemColor: primaryColor,
         unselectedItemColor: mediumGray,
         type: BottomNavigationBarType.fixed,
         elevation: 8,
+        selectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: primaryColor,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w400,
+          color: mediumGray,
+        ),
+        selectedIconTheme: IconThemeData(
+          size: 26,
+          color: primaryColor,
+        ),
+        unselectedIconTheme: IconThemeData(
+          size: 24,
+          color: mediumGray,
+        ),
       ),
       
       // 浮动操作按钮主题
@@ -169,7 +187,7 @@ class AppTheme {
       ),
       
       // 卡片主题
-      cardTheme: CardTheme(
+      cardTheme: CardThemeData(
         elevation: 2,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
@@ -212,12 +230,30 @@ class AppTheme {
       ),
       
       // 底部导航栏主题
-      bottomNavigationBarTheme: const BottomNavigationBarTheme(
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: Color(0xFF0F172A),
         selectedItemColor: primaryColor,
         unselectedItemColor: Color(0xFF64748B),
         type: BottomNavigationBarType.fixed,
         elevation: 8,
+        selectedLabelStyle: TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: primaryColor,
+        ),
+        unselectedLabelStyle: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w400,
+          color: Color(0xFF64748B),
+        ),
+        selectedIconTheme: IconThemeData(
+          size: 26,
+          color: primaryColor,
+        ),
+        unselectedIconTheme: IconThemeData(
+          size: 24,
+          color: Color(0xFF64748B),
+        ),
       ),
       
       // 浮动操作按钮主题

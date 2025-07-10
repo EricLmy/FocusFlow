@@ -22,15 +22,15 @@ Task _$TaskFromJson(Map<String, dynamic> json) => Task(
   updatedAt: json['updatedAt'] == null
       ? null
       : DateTime.parse(json['updatedAt'] as String),
-  dueDate: json['dueDate'] == null
+  completedAt: json['completedAt'] == null
       ? null
-      : DateTime.parse(json['dueDate'] as String),
+      : DateTime.parse(json['completedAt'] as String),
   tags:
       (json['tags'] as List<dynamic>?)?.map((e) => e as String).toList() ??
       const [],
-  category: json['category'] as String?,
   isArchived: json['isArchived'] as bool? ?? false,
   sortOrder: (json['sortOrder'] as num?)?.toInt() ?? 0,
+  progress: (json['progress'] as num?)?.toDouble() ?? 0.0,
 );
 
 Map<String, dynamic> _$TaskToJson(Task instance) => <String, dynamic>{
@@ -43,11 +43,11 @@ Map<String, dynamic> _$TaskToJson(Task instance) => <String, dynamic>{
   'actualMinutes': instance.actualMinutes,
   'createdAt': instance.createdAt.toIso8601String(),
   'updatedAt': instance.updatedAt?.toIso8601String(),
-  'dueDate': instance.dueDate?.toIso8601String(),
+  'completedAt': instance.completedAt?.toIso8601String(),
   'tags': instance.tags,
-  'category': instance.category,
   'isArchived': instance.isArchived,
   'sortOrder': instance.sortOrder,
+  'progress': instance.progress,
 };
 
 const _$TaskPriorityEnumMap = {

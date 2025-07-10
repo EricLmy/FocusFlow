@@ -122,6 +122,62 @@ class FocusRecord {
       'updated_at': updatedAt?.toIso8601String(),
     };
   }
+
+  /// 从数据库Map创建FocusRecord实例（兼容数据库字段名）
+  factory FocusRecord.fromDatabaseMap(Map<String, dynamic> map) {
+    return FocusRecord(
+      id: map['id'] as int?,
+      taskId: map['taskId'] as int?,
+      taskTitle: map['taskTitle'] as String?,
+      modeType: FocusModeType.values[map['modeType'] as int? ?? 0],
+      plannedMinutes: map['plannedMinutes'] as int,
+      actualMinutes: map['actualMinutes'] as int? ?? 0,
+      status: FocusSessionStatus.values[map['status'] as int? ?? 0],
+      startTime: map['startTime'] != null 
+          ? DateTime.parse(map['startTime'] as String)
+          : DateTime.now(),
+      endTime: map['endTime'] != null 
+          ? DateTime.parse(map['endTime'] as String) 
+          : null,
+      pausedAt: map['pausedAt'] != null 
+          ? DateTime.parse(map['pausedAt'] as String) 
+          : null,
+      pausedDuration: map['pausedDuration'] as int? ?? 0,
+      interruptionCount: map['interruptionCount'] as int? ?? 0,
+      notes: map['notes'] as String?,
+      metadata: map['metadata'] != null 
+          ? Map<String, dynamic>.from(map['metadata'] as Map)
+          : {},
+      createdAt: map['createdAt'] != null 
+          ? DateTime.parse(map['createdAt'] as String)
+          : DateTime.now(),
+      updatedAt: map['updatedAt'] != null 
+          ? DateTime.parse(map['updatedAt'] as String) 
+          : null,
+    );
+  }
+
+  /// 转换为数据库Map（兼容数据库字段名）
+  Map<String, dynamic> toDatabaseMap() {
+    return {
+      if (id != null) 'id': id,
+      'taskId': taskId,
+      'taskTitle': taskTitle,
+      'modeType': modeType.index,
+      'plannedMinutes': plannedMinutes,
+      'actualMinutes': actualMinutes,
+      'status': status.index,
+      'startTime': startTime.toIso8601String(),
+      'endTime': endTime?.toIso8601String(),
+      'pausedAt': pausedAt?.toIso8601String(),
+      'pausedDuration': pausedDuration,
+      'interruptionCount': interruptionCount,
+      'notes': notes,
+      'metadata': metadata.isNotEmpty ? metadata : null,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+    };
+  }
   
   /// 复制并修改专注记录
   FocusRecord copyWith({

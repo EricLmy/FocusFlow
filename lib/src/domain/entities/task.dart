@@ -38,11 +38,13 @@ class Task {
   final int actualMinutes;
   final DateTime createdAt;
   final DateTime? updatedAt;
+  final DateTime? completedAt;
   final DateTime? dueDate;
-  final List<String> tags;
   final String? category;
+  final List<String> tags;
   final bool isArchived;
   final int sortOrder;
+  final double progress; // 添加 progress 字段
   
   const Task({
     this.id,
@@ -54,11 +56,13 @@ class Task {
     this.actualMinutes = 0,
     required this.createdAt,
     this.updatedAt,
+    this.completedAt,
     this.dueDate,
-    this.tags = const [],
     this.category,
+    this.tags = const [],
     this.isArchived = false,
     this.sortOrder = 0,
+    this.progress = 0.0, // 初始化 progress
   });
   
   /// 从JSON创建Task实例
@@ -81,14 +85,74 @@ class Task {
       updatedAt: map['updated_at'] != null 
           ? DateTime.parse(map['updated_at'] as String) 
           : null,
+      completedAt: map['completed_at'] != null 
+          ? DateTime.parse(map['completed_at'] as String) 
+          : null,
       dueDate: map['due_date'] != null 
           ? DateTime.parse(map['due_date'] as String) 
           : null,
-      tags: (map['tags'] as String? ?? '').split(',').where((tag) => tag.isNotEmpty).toList(),
       category: map['category'] as String?,
+      tags: (map['tags'] as String? ?? '').split(',').where((tag) => tag.isNotEmpty).toList(),
       isArchived: (map['is_archived'] as int) == 1,
       sortOrder: map['sort_order'] as int? ?? 0,
     );
+  }
+
+  /// 从数据库Map创建Task实例（兼容数据库字段名）
+  factory Task.fromDatabaseMap(Map<String, dynamic> map) {
+    return Task(
+      id: map['id'] as int?,
+      title: map['title'] as String,
+      description: map['description'] as String?,
+      priority: TaskPriority.values[map['priority'] as int? ?? 1],
+      status: _parseStatus(map['status']),
+      estimatedMinutes: map['estimatedMinutes'] as int? ?? 25,
+      actualMinutes: map['actualMinutes'] as int? ?? 0,
+      createdAt: map['createdAt'] != null 
+          ? DateTime.parse(map['createdAt'] as String)
+          : DateTime.now(),
+      updatedAt: map['updatedAt'] != null 
+          ? DateTime.parse(map['updatedAt'] as String) 
+          : null,
+      completedAt: map['completedAt'] != null 
+          ? DateTime.parse(map['completedAt'] as String) 
+          : null,
+      dueDate: map['dueDate'] != null 
+          ? DateTime.parse(map['dueDate'] as String) 
+          : null,
+      category: map['category'] as String?,
+      tags: (map['tags'] as String? ?? '').split(',').where((tag) => tag.isNotEmpty).toList(),
+      isArchived: (map['isArchived'] as int? ?? 0) == 1,
+      sortOrder: map['sortOrder'] as int? ?? 0,
+      progress: (map['progress'] as num? ?? 0.0).toDouble(),
+    );
+  }
+
+  /// 解析任务状态
+  static TaskStatus _parseStatus(dynamic status) {
+    if (status is String) {
+      switch (status) {
+        case 'todo':
+        case 'pending':
+          return TaskStatus.pending;
+        case 'doing':
+        case 'inProgress':
+          return TaskStatus.inProgress;
+        case 'done':
+        case 'completed':
+          return TaskStatus.completed;
+        case 'paused':
+        case 'cancelled':
+          return TaskStatus.cancelled;
+        default:
+          return TaskStatus.pending;
+      }
+    } else if (status is int) {
+      if (status >= 0 && status < TaskStatus.values.length) {
+        return TaskStatus.values[status];
+      }
+    }
+    return TaskStatus.pending;
   }
   
   /// 转换为数据库Map
@@ -103,12 +167,49 @@ class Task {
       'actual_minutes': actualMinutes,
       'created_at': createdAt.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
+      'completed_at': completedAt?.toIso8601String(),
       'due_date': dueDate?.toIso8601String(),
-      'tags': tags.join(','),
       'category': category,
+      'tags': tags.join(','),
       'is_archived': isArchived ? 1 : 0,
       'sort_order': sortOrder,
     };
+  }
+
+  /// 转换为数据库Map（兼容数据库字段名）
+  Map<String, dynamic> toDatabaseMap() {
+    return {
+      if (id != null) 'id': id,
+      'title': title,
+      'description': description,
+      'priority': priority.index,
+      'status': _statusToString(status),
+      'estimatedMinutes': estimatedMinutes,
+      'actualMinutes': actualMinutes,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt?.toIso8601String(),
+      'completedAt': completedAt?.toIso8601String(),
+      'dueDate': dueDate?.toIso8601String(),
+      'category': category,
+      'tags': tags.join(','),
+      'isArchived': isArchived ? 1 : 0,
+      'sortOrder': sortOrder,
+      'progress': progress,
+    };
+  }
+
+  /// 将状态转换为字符串
+  static String _statusToString(TaskStatus status) {
+    switch (status) {
+      case TaskStatus.pending:
+        return 'todo';
+      case TaskStatus.inProgress:
+        return 'doing';
+      case TaskStatus.completed:
+        return 'done';
+      case TaskStatus.cancelled:
+        return 'paused';
+    }
   }
   
   /// 复制并修改任务
@@ -122,11 +223,13 @@ class Task {
     int? actualMinutes,
     DateTime? createdAt,
     DateTime? updatedAt,
+    DateTime? completedAt,
     DateTime? dueDate,
-    List<String>? tags,
     String? category,
+    List<String>? tags,
     bool? isArchived,
     int? sortOrder,
+    double? progress,
   }) {
     return Task(
       id: id ?? this.id,
@@ -138,11 +241,13 @@ class Task {
       actualMinutes: actualMinutes ?? this.actualMinutes,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      completedAt: completedAt ?? this.completedAt,
       dueDate: dueDate ?? this.dueDate,
-      tags: tags ?? this.tags,
       category: category ?? this.category,
+      tags: tags ?? this.tags,
       isArchived: isArchived ?? this.isArchived,
       sortOrder: sortOrder ?? this.sortOrder,
+      progress: progress ?? this.progress,
     );
   }
   
@@ -150,7 +255,9 @@ class Task {
   Task markAsCompleted() {
     return copyWith(
       status: TaskStatus.completed,
+      progress: 1.0,
       updatedAt: DateTime.now(),
+      completedAt: DateTime.now(),
     );
   }
   
@@ -186,23 +293,7 @@ class Task {
     );
   }
   
-  /// 检查任务是否逾期
-  bool get isOverdue {
-    if (dueDate == null || status == TaskStatus.completed) {
-      return false;
-    }
-    return DateTime.now().isAfter(dueDate!);
-  }
-  
-  /// 检查任务是否即将到期（24小时内）
-  bool get isDueSoon {
-    if (dueDate == null || status == TaskStatus.completed) {
-      return false;
-    }
-    final now = DateTime.now();
-    final timeDiff = dueDate!.difference(now);
-    return timeDiff.inHours <= 24 && timeDiff.inHours > 0;
-  }
+
   
   /// 获取优先级显示文本
   String get priorityText {
@@ -271,14 +362,16 @@ extension TaskExtensions on List<Task> {
     return sorted;
   }
   
-  /// 按截止时间排序
-  List<Task> sortByDueDate() {
+  /// 按完成时间排序
+  List<Task> sortByCompletedAt({bool ascending = false}) {
     final sorted = List<Task>.from(this);
     sorted.sort((a, b) {
-      if (a.dueDate == null && b.dueDate == null) return 0;
-      if (a.dueDate == null) return 1;
-      if (b.dueDate == null) return -1;
-      return a.dueDate!.compareTo(b.dueDate!);
+      if (a.completedAt == null && b.completedAt == null) return 0;
+      if (a.completedAt == null) return 1;
+      if (b.completedAt == null) return -1;
+      return ascending 
+          ? a.completedAt!.compareTo(b.completedAt!)
+          : b.completedAt!.compareTo(a.completedAt!);
     });
     return sorted;
   }
@@ -300,22 +393,6 @@ extension TaskExtensions on List<Task> {
     return where((task) => task.status == TaskStatus.completed).toList();
   }
   
-  /// 筛选逾期任务
-  List<Task> get overdue {
-    return where((task) => task.isOverdue).toList();
-  }
-  
-  /// 筛选即将到期的任务
-  List<Task> get dueSoon {
-    return where((task) => task.isDueSoon).toList();
-  }
-  
-  /// 按分类筛选
-  List<Task> filterByCategory(String? category) {
-    if (category == null) return this;
-    return where((task) => task.category == category).toList();
-  }
-  
   /// 按标签筛选
   List<Task> filterByTag(String tag) {
     return where((task) => task.tags.contains(tag)).toList();
@@ -328,8 +405,7 @@ extension TaskExtensions on List<Task> {
     return where((task) {
       return task.title.toLowerCase().contains(lowerQuery) ||
              (task.description?.toLowerCase().contains(lowerQuery) ?? false) ||
-             task.tags.any((tag) => tag.toLowerCase().contains(lowerQuery)) ||
-             (task.category?.toLowerCase().contains(lowerQuery) ?? false);
+             task.tags.any((tag) => tag.toLowerCase().contains(lowerQuery));
     }).toList();
   }
 }

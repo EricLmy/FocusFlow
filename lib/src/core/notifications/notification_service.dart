@@ -129,8 +129,7 @@ class NotificationService {
       tz.TZDateTime.from(scheduledTime, tz.local),
       notificationDetails,
       payload: payload,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
+      androidScheduleMode: AndroidScheduleMode.exact,
     );
   }
 
@@ -164,6 +163,7 @@ class NotificationService {
       body,
       repeatInterval,
       notificationDetails,
+      androidScheduleMode: AndroidScheduleMode.exact,
       payload: payload,
     );
   }

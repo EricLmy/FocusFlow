@@ -1,92 +1,94 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// 主导航组件 - 包含底部导航栏
-class MainNavigation extends StatelessWidget {
+/// 主导航组件
+class MainNavigation extends StatefulWidget {
   final Widget child;
   
   const MainNavigation({super.key, required this.child});
   
   @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: child,
-      bottomNavigationBar: _buildBottomNavigationBar(context),
-    );
+  State<MainNavigation> createState() => _MainNavigationState();
+}
+
+class _MainNavigationState extends State<MainNavigation> {
+  int _selectedIndex = 0;
+  
+  // 导航项配置
+  final List<NavigationItem> _navigationItems = [
+    NavigationItem(
+      icon: Icons.today,
+      label: '今日',
+      route: '/',
+    ),
+    NavigationItem(
+      icon: Icons.bar_chart,
+      label: '统计',
+      route: '/statistics',
+    ),
+    NavigationItem(
+      icon: Icons.list,
+      label: '列表',
+      route: '/tasks',
+    ),
+  ];
+  
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _updateSelectedIndex();
   }
   
-  Widget _buildBottomNavigationBar(BuildContext context) {
-    final currentLocation = GoRouterState.of(context).uri.path;
-    
-    // 确定当前选中的索引
-    int currentIndex = 0;
-    switch (currentLocation) {
-      case '/':
-      case '/tasks':
-        currentIndex = 0;
-        break;
-      case '/focus':
-        currentIndex = 1;
-        break;
-      case '/statistics':
-        currentIndex = 2;
-        break;
-      case '/settings':
-        currentIndex = 3;
-        break;
-      default:
-        // 对于子页面，根据父路径确定索引
-        if (currentLocation.startsWith('/tasks')) {
-          currentIndex = 0;
-        } else if (currentLocation.startsWith('/focus')) {
-          currentIndex = 1;
-        } else if (currentLocation.startsWith('/statistics')) {
-          currentIndex = 2;
-        } else if (currentLocation.startsWith('/settings')) {
-          currentIndex = 3;
+  void _updateSelectedIndex() {
+    final location = GoRouterState.of(context).uri.path;
+    for (int i = 0; i < _navigationItems.length; i++) {
+      if (location == _navigationItems[i].route || 
+          (location.startsWith(_navigationItems[i].route) && _navigationItems[i].route != '/')) {
+        if (_selectedIndex != i) {
+          setState(() {
+            _selectedIndex = i;
+          });
         }
         break;
+      }
     }
-    
-    return BottomNavigationBar(
-      type: BottomNavigationBarType.fixed,
-      currentIndex: currentIndex,
-      onTap: (index) => _onTabTapped(context, index),
-      items: const [
-        BottomNavigationBarItem(
-          icon: Icon(Icons.task_alt),
-          label: '任务',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.timer),
-          label: '专注',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.analytics),
-          label: '统计',
-        ),
-        BottomNavigationBarItem(
-          icon: Icon(Icons.settings),
-          label: '设置',
-        ),
-      ],
+  }
+  
+  void _onTabTapped(int index) {
+    if (index != _selectedIndex) {
+      context.go(_navigationItems[index].route);
+    }
+  }
+  
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: widget.child,
+      bottomNavigationBar: _buildBottomNavigationBar(),
     );
   }
   
-  void _onTabTapped(BuildContext context, int index) {
-    switch (index) {
-      case 0:
-        context.go('/');
-        break;
-      case 1:
-        context.go('/focus');
-        break;
-      case 2:
-        context.go('/statistics');
-        break;
-      case 3:
-        context.go('/settings');
-        break;
-    }
+  Widget _buildBottomNavigationBar() {
+    return BottomNavigationBar(
+      currentIndex: _selectedIndex,
+      onTap: _onTabTapped,
+      items: _navigationItems.map((item) => BottomNavigationBarItem(
+        icon: Icon(item.icon),
+        label: item.label,
+      )).toList(),
+    );
   }
+}
+
+/// 导航项数据类
+class NavigationItem {
+  final IconData icon;
+  final String label;
+  final String route;
+  
+  const NavigationItem({
+    required this.icon,
+    required this.label,
+    required this.route,
+  });
 }

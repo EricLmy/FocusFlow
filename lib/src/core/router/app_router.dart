@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../features/task_management/presentation/pages/home_page.dart';
 import '../../features/task_management/presentation/pages/task_list_page.dart';
-import '../../features/focus_mode/presentation/pages/focus_page.dart';
 import '../../features/statistics/presentation/pages/statistics_page.dart';
-import '../../features/settings/presentation/pages/settings_page.dart';
+import '../../features/focus_mode/presentation/pages/focus_page.dart';
 import '../../../main_navigation.dart';
+
+
 
 /// 路由路径常量
 class AppRoutes {
   static const String home = '/';
   static const String tasks = '/tasks';
-  static const String focus = '/focus';
   static const String statistics = '/statistics';
-  static const String settings = '/settings';
+  static const String focus = '/focus';
   static const String taskDetail = '/tasks/:id';
   static const String taskEdit = '/tasks/:id/edit';
   static const String taskCreate = '/tasks/create';
@@ -36,11 +37,11 @@ class AppRouter {
             return MainNavigation(child: child);
           },
           routes: [
-            // 首页/任务列表
+            // 首页
             GoRoute(
               path: AppRoutes.home,
               name: 'home',
-              builder: (context, state) => const TaskListPage(),
+              builder: (context, state) => const HomePage(),
             ),
             
             // 任务管理页面
@@ -78,32 +79,24 @@ class AppRouter {
               ],
             ),
             
-            // 专注模式页面
-            GoRoute(
-              path: AppRoutes.focus,
-              name: 'focus',
-              builder: (context, state) {
-                final taskId = state.uri.queryParameters['taskId'];
-                return FocusPage(
-                  taskId: taskId != null ? int.parse(taskId) : null,
-                );
-              },
-            ),
-            
             // 统计页面
             GoRoute(
               path: AppRoutes.statistics,
               name: 'statistics',
               builder: (context, state) => const StatisticsPage(),
             ),
-            
-            // 设置页面
-            GoRoute(
-              path: AppRoutes.settings,
-              name: 'settings',
-              builder: (context, state) => const SettingsPage(),
-            ),
           ],
+        ),
+        
+        // 专注页面 - 全屏模式，不包含底部导航栏
+        GoRoute(
+          path: AppRoutes.focus,
+          name: 'focus',
+          builder: (context, state) {
+            final taskIdStr = state.uri.queryParameters['taskId'];
+            final taskId = taskIdStr != null ? int.tryParse(taskIdStr) : null;
+            return FocusPage(taskId: taskId);
+          },
         ),
       ],
       
@@ -160,15 +153,6 @@ extension AppRouterExtension on GoRouter {
   void goToTaskCreate() {
     go('/tasks/create');
   }
-  
-  /// 导航到专注模式页（可选任务ID）
-  void goToFocus({int? taskId}) {
-    if (taskId != null) {
-      go('/focus?taskId=$taskId');
-    } else {
-      go('/focus');
-    }
-  }
 }
 
 /// 路由Provider
@@ -190,20 +174,16 @@ class NavigationHelper {
     context.go('/tasks/create');
   }
   
+  static void goToStatistics(BuildContext context) {
+    context.go('/statistics');
+  }
+  
   static void goToFocus(BuildContext context, {int? taskId}) {
     if (taskId != null) {
       context.go('/focus?taskId=$taskId');
     } else {
       context.go('/focus');
     }
-  }
-  
-  static void goToStatistics(BuildContext context) {
-    context.go('/statistics');
-  }
-  
-  static void goToSettings(BuildContext context) {
-    context.go('/settings');
   }
   
   static void goHome(BuildContext context) {

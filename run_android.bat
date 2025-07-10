@@ -1,0 +1,6 @@
+@echo off
+echo 正在清理Flutter项目...
+flutter clean
+echo.
+echo 正在启动Android模拟器应用...
+flutter run -d emulator-5554 --hot
